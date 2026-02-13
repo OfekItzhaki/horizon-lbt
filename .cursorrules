@@ -1,0 +1,36 @@
+# Language Learning Bot - Coding Standards
+
+## Architecture Rules
+- Use async/await for all asynchronous operations (NO callbacks)
+- Service layer functions return: {success: boolean, data?: any, error?: string, code?: string}
+- Validate all service inputs with Joi schemas
+- Keep all files under 250 lines of code
+
+## Error Handling
+- Use try-catch blocks for all async operations
+- Log errors with Winston (never console.log in production)
+- Return standardized error objects with error codes
+- Implement retry logic for external API calls (Firestore, OpenAI)
+
+## Code Quality
+- Add JSDoc comments to all public functions
+- Use meaningful camelCase variable/function names
+- No hardcoded strings, API keys, or configuration values
+- Handle edge cases: empty inputs, network timeouts, malformed data
+
+## Testing
+- Mock all external APIs (OpenAI, Telegram, Firestore)
+- Write property-based tests for core logic
+- Write unit tests for edge cases and error conditions
+- Aim for 80% overall coverage, 90% for services
+
+## Logging Levels
+- error: System failures, unrecoverable errors
+- warn: Degraded functionality, retries
+- info: Important business events (assessments, reports)
+- debug: Detailed flow information (Telegram updates)
+
+## Security
+- Never log sensitive data (API keys, tokens, private keys)
+- Validate and sanitize all user inputs
+- Use environment variables for all configuration

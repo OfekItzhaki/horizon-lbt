@@ -1,0 +1,46 @@
+{
+  "name": "language-learning-bot",
+  "version": "1.0.0",
+  "description": "Production-ready Telegram bot for language learning with AI-powered voice assessment",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "start:mcp": "node src/mcp/assessmentMcp.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "language-learning",
+    "ai",
+    "voice-assessment",
+    "openai",
+    "whisper",
+    "mcp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.1",
+    "express": "^4.22.1",
+    "firebase-admin": "^12.0.0",
+    "form-data": "^4.0.0",
+    "joi": "^17.12.1",
+    "node-cron": "^3.0.3",
+    "openai": "^4.28.0",
+    "telegraf": "^4.15.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.1",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
+    "supertest": "^6.3.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

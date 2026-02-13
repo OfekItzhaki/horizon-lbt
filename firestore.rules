@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Deny all client access - only server-side service account can access
+    // The bot's Firebase Admin SDK (service account) bypasses these rules
+    // and has full read/write access to all collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // This ensures:
+    // ✅ Bot (service account) has full access
+    // ❌ No direct client/web access to database
+    // ✅ All data access goes through your bot's backend
+  }
+}
