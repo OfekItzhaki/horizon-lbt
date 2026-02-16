@@ -168,49 +168,81 @@ function scheduleWeeklyReports() {
 }
 
 /**
- * Start the bot
+ * Start the bot with retry logic
  */
 async function startBot() {
-  try {
-    logger.info('Starting Language Learning Bot', { nodeEnv: config.nodeEnv });
-    
-    // Start MCP server (optional - skip if it fails)
+  const maxRetries = 5;
+  let retryCount = 0;
+  
+  while (retryCount < maxRetries) {
     try {
-      await startMcpServer(config.mcp.port, config.mcp.host);
-    } catch (error) {
-      logger.warn('MCP server failed to start, continuing without it', { error: error.message });
-    }
-    
-    // Schedule cron jobs
-    scheduleDailyLessons();
-    scheduleWeeklyReports();
-    
-    // Start bot based on environment
-    // Only use webhook if we have a full URL (not just a path like "/webhook")
-    const useWebhook = config.nodeEnv === 'production' && 
-                       config.telegram.webhookPath && 
-                       config.telegram.webhookPath.startsWith('http');
-    
-    if (useWebhook) {
-      // Webhook mode for production
-      logger.info('Starting bot in webhook mode');
-      await bot.launch({
-        webhook: {
-          domain: config.telegram.webhookPath,
-          port: process.env.PORT || 3000
-        }
+      logger.info('Starting Language Learning Bot', { 
+        nodeEnv: config.nodeEnv,
+        attempt: retryCount + 1,
+        maxRetries
       });
-    } else {
-      // Polling mode for development or when webhook URL is not configured
-      logger.info('Starting bot in polling mode');
-      await bot.launch();
+      
+      // Start MCP server (optional - skip if it fails)
+      try {
+        await startMcpServer(config.mcp.port, config.mcp.host);
+      } catch (error) {
+        logger.warn('MCP server failed to start, continuing without it', { error: error.message });
+      }
+      
+      // Schedule cron jobs
+      scheduleDailyLessons();
+      scheduleWeeklyReports();
+      
+      // Start bot based on environment
+      // Only use webhook if we have a full URL (not just a path like "/webhook")
+      const useWebhook = config.nodeEnv === 'production' && 
+                         config.telegram.webhookPath && 
+                         config.telegram.webhookPath.startsWith('http');
+      
+      if (useWebhook) {
+        // Webhook mode for production
+        logger.info('Starting bot in webhook mode');
+        await bot.launch({
+          webhook: {
+            domain: config.telegram.webhookPath,
+            port: process.env.PORT || 3000
+          }
+        });
+      } else {
+        // Polling mode for development or when webhook URL is not configured
+        logger.info('Starting bot in polling mode');
+        await bot.launch();
+      }
+      
+      logger.info('Bot started successfully');
+      return; // Success - exit the retry loop
+      
+    } catch (error) {
+      retryCount++;
+      
+      // Check if it's a 409 conflict error
+      if (error.message && error.message.includes('409')) {
+        const waitTime = Math.min(1000 * Math.pow(2, retryCount), 30000); // Exponential backoff, max 30s
+        logger.warn('Bot start failed with conflict, retrying...', { 
+          error: error.message,
+          attempt: retryCount,
+          maxRetries,
+          waitingMs: waitTime
+        });
+        
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+      }
+      
+      // For other errors or max retries reached
+      logger.error('Failed to start bot', { 
+        error: error.message,
+        attempts: retryCount
+      });
+      process.exit(1);
     }
-    
-    logger.info('Bot started successfully');
-    
-  } catch (error) {
-    logger.error('Failed to start bot', { error: error.message });
-    process.exit(1);
   }
 }
 
