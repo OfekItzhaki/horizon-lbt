@@ -17,7 +17,7 @@ const languages = {
           { word: 'nice to meet you', translation: 'נעים להכיר', example: 'Nice to meet you!' },
           { word: 'how are you', translation: 'מה שלומך', example: 'How are you today?' }
         ],
-        quizPrompt: "Say: 'Hello, my name is [your name]. Nice to meet you!'"
+        quizPrompt: "אמור: 'Hello, my name is [השם שלך]. Nice to meet you!'"
       },
       2: {
         title: 'Common Phrases',
@@ -28,7 +28,7 @@ const languages = {
           { word: 'I am sorry', translation: 'אני מצטער', example: 'I am sorry for being late.' },
           { word: 'you are welcome', translation: 'על לא דבר', example: 'You are welcome!' }
         ],
-        quizPrompt: "Say: 'Excuse me, please. Thank you!'"
+        quizPrompt: "אמור: 'Excuse me, please. Thank you!'"
       }
     }
   },

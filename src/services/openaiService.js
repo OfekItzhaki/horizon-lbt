@@ -4,10 +4,14 @@ const config = require('../config/config');
 const logger = require('../utils/logger');
 
 /**
- * Initialize OpenAI client
+ * Initialize AI client (supports both OpenAI and Groq)
  */
-const openai = new OpenAI({
-  apiKey: config.openai.apiKey
+const useGroq = config.openai.useGroq || false;
+const apiKey = useGroq ? config.openai.groqApiKey : config.openai.apiKey;
+
+const client = new OpenAI({
+  apiKey: apiKey,
+  baseURL: useGroq ? 'https://api.groq.com/openai/v1' : undefined
 });
 
 /**
@@ -53,14 +57,32 @@ async function transcribeAudio(audioBuffer, language) {
     const whisperLanguage = languageMap[language] || 'en';
 
     const transcription = await retryOnce(async () => {
-      // Create a File-like object from the buffer
-      const file = new File([audioBuffer], 'audio.ogg', { type: 'audio/ogg' });
-      
-      return await openai.audio.transcriptions.create({
-        file: file,
-        model: 'whisper-1',
-        language: whisperLanguage
-      });
+      // Use Groq's Whisper (free) if available, otherwise OpenAI
+      if (useGroq && config.openai.groqApiKey) {
+        const groqClient = new OpenAI({
+          apiKey: config.openai.groqApiKey,
+          baseURL: 'https://api.groq.com/openai/v1'
+        });
+        
+        // Create a File-like object from the buffer
+        const file = new File([audioBuffer], 'audio.ogg', { type: 'audio/ogg' });
+        
+        return await groqClient.audio.transcriptions.create({
+          file: file,
+          model: 'whisper-large-v3',
+          language: whisperLanguage
+        });
+      } else {
+        // Fallback to OpenAI
+        const openaiClient = new OpenAI({ apiKey: config.openai.apiKey });
+        const file = new File([audioBuffer], 'audio.ogg', { type: 'audio/ogg' });
+        
+        return await openaiClient.audio.transcriptions.create({
+          file: file,
+          model: 'whisper-1',
+          language: whisperLanguage
+        });
+      }
     });
 
     logger.info('Audio transcribed successfully', { 
@@ -133,8 +155,11 @@ STRENGTHS: [comma-separated list]
 WEAK_AREAS: [comma-separated list]`;
 
     const completion = await retryOnce(async () => {
-      return await openai.chat.completions.create({
-        model: 'gpt-4',
+      // Use Groq's llama model (free) or OpenAI's GPT-4
+      const model = useGroq ? 'llama-3.3-70b-versatile' : 'gpt-4';
+      
+      return await client.chat.completions.create({
+        model: model,
         messages: [
           { role: 'system', content: 'You are an expert language teacher providing assessment feedback.' },
           { role: 'user', content: prompt }

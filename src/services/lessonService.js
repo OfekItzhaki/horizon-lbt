@@ -67,9 +67,10 @@ function getLesson(languageCode, lessonDay) {
  * @param {Object} lesson - Lesson object
  * @param {number} lessonDay - Lesson day number
  * @param {string} languageFlag - Language flag emoji
+ * @param {string} nativeLanguage - User's native language code
  * @returns {string} Formatted lesson message
  */
-function formatLesson(lesson, lessonDay, languageFlag = '📚') {
+function formatLesson(lesson, lessonDay, languageFlag = '📚', nativeLanguage = 'he') {
   let message = `${languageFlag} Day ${lessonDay} - ${lesson.title}\n\n`;
   
   lesson.words.forEach((item, index) => {
@@ -77,7 +78,17 @@ function formatLesson(lesson, lessonDay, languageFlag = '📚') {
     message += `   Example: ${item.example}\n\n`;
   });
   
-  message += `📝 Practice: ${lesson.quizPrompt}`;
+  // Add practice instruction in native language first
+  const practiceInstructions = {
+    he: '📝 תרגול: ',
+    en: '📝 Practice: ',
+    es: '📝 Práctica: ',
+    fr: '📝 Pratique: ',
+    de: '📝 Übung: '
+  };
+  
+  const instruction = practiceInstructions[nativeLanguage] || practiceInstructions['en'];
+  message += `${instruction}${lesson.quizPrompt}`;
   
   return message;
 }

@@ -10,6 +10,10 @@ dotenv.config();
 const configSchema = Joi.object({
   TELEGRAM_BOT_TOKEN: Joi.string().required(),
   OPENAI_API_KEY: Joi.string().required(),
+  GROQ_API_KEY: Joi.string().optional(),
+  USE_GROQ: Joi.boolean().default(false),
+  DEEPGRAM_API_KEY: Joi.string().optional(),
+  USE_DEEPGRAM: Joi.boolean().default(false),
   FIREBASE_PROJECT_ID: Joi.string().required(),
   FIREBASE_PRIVATE_KEY: Joi.string().required(),
   FIREBASE_CLIENT_EMAIL: Joi.string().email().required(),
@@ -42,7 +46,13 @@ function loadConfig() {
       adminId: value.ADMIN_TELEGRAM_ID
     },
     openai: {
-      apiKey: value.OPENAI_API_KEY
+      apiKey: value.OPENAI_API_KEY,
+      groqApiKey: value.GROQ_API_KEY || null,
+      useGroq: value.USE_GROQ || false
+    },
+    deepgram: {
+      apiKey: value.DEEPGRAM_API_KEY || null,
+      useDeepgram: value.USE_DEEPGRAM || false
     },
     anthropic: {
       apiKey: value.ANTHROPIC_API_KEY || null

@@ -1,6 +1,8 @@
 const Joi = require('joi');
 const openaiService = require('./openaiService');
+const deepgramService = require('./deepgramService');
 const firebaseService = require('./firebaseService');
+const config = require('../config/config');
 const logger = require('../utils/logger');
 const { validate } = require('../utils/validator');
 
@@ -147,10 +149,31 @@ async function assessVoice(params) {
     const validatedParams = validation.value;
 
     // Step 1: Transcribe audio
-    const transcriptionResult = await openaiService.transcribeAudio(
-      validatedParams.audioBuffer,
-      validatedParams.targetLanguage
-    );
+    // Use Deepgram if configured, otherwise fall back to OpenAI/Groq
+    let transcriptionResult;
+    
+    if (config.deepgram && config.deepgram.useDeepgram && config.deepgram.apiKey) {
+      logger.info('Using Deepgram for transcription');
+      transcriptionResult = await deepgramService.transcribeAudio(
+        validatedParams.audioBuffer,
+        validatedParams.targetLanguage
+      );
+      
+      // Fallback to OpenAI/Groq if Deepgram fails
+      if (!transcriptionResult.success) {
+        logger.warn('Deepgram transcription failed, falling back to OpenAI/Groq');
+        transcriptionResult = await openaiService.transcribeAudio(
+          validatedParams.audioBuffer,
+          validatedParams.targetLanguage
+        );
+      }
+    } else {
+      logger.info('Using OpenAI/Groq for transcription');
+      transcriptionResult = await openaiService.transcribeAudio(
+        validatedParams.audioBuffer,
+        validatedParams.targetLanguage
+      );
+    }
 
     if (!transcriptionResult.success) {
       return transcriptionResult;
