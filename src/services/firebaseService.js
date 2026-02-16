@@ -31,8 +31,7 @@ initializeFirebase();
  * @returns {FirebaseFirestore.Firestore} Firestore instance
  */
 function getFirestore() {
-  const db = admin.firestore();
-  return db;
+  return admin.firestore();
 }
 
 /**
