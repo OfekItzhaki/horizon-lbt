@@ -174,8 +174,12 @@ async function startBot() {
   try {
     logger.info('Starting Language Learning Bot', { nodeEnv: config.nodeEnv });
     
-    // Start MCP server
-    await startMcpServer(config.mcp.port, config.mcp.host);
+    // Start MCP server (optional - skip if it fails)
+    try {
+      await startMcpServer(config.mcp.port, config.mcp.host);
+    } catch (error) {
+      logger.warn('MCP server failed to start, continuing without it', { error: error.message });
+    }
     
     // Schedule cron jobs
     scheduleDailyLessons();
