@@ -182,7 +182,12 @@ async function startBot() {
     scheduleWeeklyReports();
     
     // Start bot based on environment
-    if (config.nodeEnv === 'production' && config.telegram.webhookPath) {
+    // Only use webhook if we have a full URL (not just a path like "/webhook")
+    const useWebhook = config.nodeEnv === 'production' && 
+                       config.telegram.webhookPath && 
+                       config.telegram.webhookPath.startsWith('http');
+    
+    if (useWebhook) {
       // Webhook mode for production
       logger.info('Starting bot in webhook mode');
       await bot.launch({
@@ -192,7 +197,7 @@ async function startBot() {
         }
       });
     } else {
-      // Polling mode for development
+      // Polling mode for development or when webhook URL is not configured
       logger.info('Starting bot in polling mode');
       await bot.launch();
     }
