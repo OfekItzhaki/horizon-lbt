@@ -67,6 +67,32 @@ bot.action('action_change', async (ctx) => {
  */
 bot.on('voice', handleVoiceMessage);
 
+// Fallback handler for text messages
+bot.on('text', async (ctx) => {
+  const text = ctx.message.text;
+  
+  // Ignore if it's a command (starts with /)
+  if (text.startsWith('/')) {
+    return;
+  }
+  
+  // Show available commands in Hebrew and English
+  await ctx.reply(
+    `שלום! 👋 הנה הפקודות הזמינות:\n\n` +
+    `/start - התחל מחדש או בחר שפה\n` +
+    `/lesson - קבל את השיעור הנוכחי\n` +
+    `/progress - ראה את ההתקדמות שלך\n` +
+    `/change - החלף שפת לימוד\n\n` +
+    `───────────────\n\n` +
+    `Hello! 👋 Here are the available commands:\n\n` +
+    `/start - Start over or select language\n` +
+    `/lesson - Get your current lesson\n` +
+    `/progress - View your progress\n` +
+    `/change - Change learning language\n\n` +
+    `💡 Tip: Send a voice message after completing a lesson to get feedback!`
+  );
+});
+
 /**
  * Daily lesson cron job
  * Runs every day and sends lessons to users at their configured time

@@ -19,10 +19,15 @@ async function handleStart(ctx) {
     const userResult = await firebaseService.getUser(userId);
     
     if (userResult.success) {
-      // Existing user
+      // Existing user - show welcome in Hebrew
+      const langName = userResult.data.targetLanguage.toUpperCase();
       await ctx.reply(
+        `ברוך שובך, ${userName}! 👋\n\n` +
+        `אתה לומד כרגע ${langName}.\n\n` +
+        `השתמש ב-/lesson כדי להמשיך, או ב-/change כדי להחליף שפה.\n\n` +
+        `───────────────\n` +
         `Welcome back, ${userName}! 👋\n\n` +
-        `You're currently learning ${userResult.data.targetLanguage.toUpperCase()}.\n\n` +
+        `You're currently learning ${langName}.\n\n` +
         `Use /lesson to continue, or /change to switch languages.`
       );
       return;

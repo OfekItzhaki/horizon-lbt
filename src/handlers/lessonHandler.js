@@ -121,7 +121,30 @@ async function handleLessonCommand(ctx) {
     const user = userResult.data;
     const currentDay = user.lessonDay || 1;
 
-    await sendLesson(ctx.telegram, userId, user.targetLanguage, currentDay);
+    // Get lesson
+    const lessonResult = lessonService.getLesson(user.targetLanguage, currentDay);
+
+    if (!lessonResult.success) {
+      await ctx.reply(`Sorry, lesson ${currentDay} is not available yet. Stay tuned! 📚`);
+      return;
+    }
+
+    const lesson = lessonResult.data;
+    const formattedLesson = lessonService.formatLesson(
+      lesson, 
+      currentDay, 
+      lesson.languageFlag,
+      user.nativeLanguage || 'he'
+    );
+
+    await ctx.reply(
+      formattedLesson,
+      Markup.inlineKeyboard([
+        [Markup.button.callback('✅ Mark Complete', `lesson_complete_${currentDay}`)]
+      ])
+    );
+
+    logger.info('Lesson sent successfully', { userId, lessonDay: currentDay, languageCode: user.targetLanguage });
 
   } catch (error) {
     logger.error('Error in handleLessonCommand', { error: error.message });
