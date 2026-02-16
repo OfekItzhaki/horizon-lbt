@@ -103,6 +103,9 @@ async function handleVoiceMessage(ctx) {
 function formatAssessmentResult(assessment) {
   let message = '🎯 Assessment Complete!\n\n';
   
+  // Show what was heard
+  message += `🎤 What I heard:\n"${assessment.transcript}"\n\n`;
+  
   message += `📊 Score: ${assessment.score}/100\n\n`;
   
   message += `💬 Feedback:\n${assessment.feedback}\n\n`;
